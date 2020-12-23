@@ -9,14 +9,13 @@ con = mysql.connector.connect(
 )
 cursor = con.cursor(buffered=True)
 
+#initialize db
 def initialize():
     cursor.execute("DROP DATABASE IF EXISTS db; ")
     cursor.execute("CREATE DATABASE db CHARACTER SET utf8 COLLATE utf8_general_ci; ")
     cursor.execute("USE db; ")
-
     # vtrPhone, password, name, zip
     cursor.execute("CREATE TABLE volunteers (vtrPhone varchar(20) PRIMARY KEY, password varchar(255) NOT NULL, name varchar(255) NOT NULL, zip int(5) NOT NULL); ")
-
     # rqstrPhone, name, address, zip, rqDetails, dropDetails, addInfo, thankYou, assigned
     cursor.execute("CREATE TABLE requesters (rqstrPhone varchar(20) PRIMARY KEY, name varchar(255) NOT NULL, address varchar(255) NOT NULL, zip int(5) NOT NULL, rqDetails varchar(1024) NOT NULL, dropDetails varchar(1024) NOT NULL, addInfo varchar(1024), thankYou varchar(1024), assigned boolean NOT NULL, accepted boolean NOT NULL); ")
     # reID, vtrPhone, rqstrPhone, zip, accepted, delivery_time
@@ -37,6 +36,7 @@ def add_requester (phone, name, address, zipC, rqDetails, dropDetails, addInfo, 
     cursor.execute(sql,val)
     con.commit()
 
+# update volunteer zipcode 
 def update_vtr_zip (zipCode, vtrPhone):
     sql = "UPDATE volunteers SET zip = %s WHERE vtrPhone = %s; "
     val = (zipCode, vtrPhone)
@@ -46,11 +46,13 @@ def update_vtr_zip (zipCode, vtrPhone):
     sql = "DELETE FROM requests WHERE vtrPhone = %s; "
     cursor.execute(sql % vtrPhone)
 
+# update volunteer name
 def update_vtr_name (name, vtrPhone):
     sql = "UPDATE volunteers set name = %s WHERE vtrPhone = %s; "
     val = (name, vtrPhone)
     cursor.execute(sql, val)
 
+# update volunteer password
 def update_vtr_pw (password, vtrPhone):
     sql = "UPDATE volunteers set password = %s WHERE vtrPhone = %s; "
     val = (password, vtrPhone)
@@ -65,6 +67,7 @@ def assign_request (vtrPhone, rqstrPhone, zipC, accepted=False):
     cursor.execute(sql % rqstrPhone)
     con.commit()
 
+# get requester name from phone
 def get_req_name(rqstrPhone):
     sql = "SELECT name FROM requesters WHERE rqstrPhone = %s"
     cursor.execute(sql % rqstrPhone)
@@ -72,6 +75,7 @@ def get_req_name(rqstrPhone):
     con.commit()
     return name
 
+# get volunteer name from phone
 def get_vtr_name(vtrPhone):
     sql = "SELECT name FROM volunteers WHERE vtrPhone = %s"
     cursor.execute(sql % vtrPhone)
@@ -79,6 +83,7 @@ def get_vtr_name(vtrPhone):
     con.commit()
     return name
 
+# get requester phone number for request
 def get_req_phone (reqID):
     sql = "SELECT rqstrPhone from requests where rqID = %s; "
     cursor.execute(sql % reqID)
@@ -167,12 +172,14 @@ def get_requesters():
     con.commit()
     return rqstrs
 
+# get phones and zips for all requesters
 def get_requester_phones_and_zips():
     sql = "SELECT rqstrPhone, zip from requesters WHERE assigned = 0; "
     cursor.execute(sql)
     info = cursor.fetchall()
     con.commit()
     return info
+
 # get all volunteers
 def get_volunteers():
     sql = "SELECT * FROM volunteers; "
@@ -189,6 +196,7 @@ def get_volunteer_zip(vtrPhone):
     con.commit()
     return info
 
+# get requester id  for request
 def get_req_id(vtrPhone, rqstrPhone):
     sql = "SELECT rqID FROM requests WHERE vtrPhone = %s AND rqstrPhone = %s; "
     val = (vtrPhone, rqstrPhone)
@@ -204,19 +212,11 @@ def get_volunteer_user_pass():
     vtrs = cursor.fetchall()
     con.commit()
     return vtrs
+
 # delete table
 def delete(tableName):
     sql = "TRUNCATE TABLE %s; "
     cursor.execute(sql % tableName)
 
-#
 # initialize()
 cursor.execute("USE db; ")
-# #register_volunteer("+18582038211", "abcd", "Julie", "60637")
-# register_volunteer("+12223334444", "abcd", "Bhakti", "606")
-# add_requester("+13120221224", "Vernon", "5500 S University Avenue, Chicago, IL", 60637, "trader joe’s frozen pizza, $10", "front door", "no", "thank you for helping me!")
-# #add_requester("+13125238576", "Cole", "12100 S Cornell Ave, Chicago, IL", 60637, "milk, 4 cartons", "front door", "please ring the doorbell!", "thank you for being so kind and helping me out!")
-# add_requester("+18382776372", "Elizabeth", "3775 Bloomington Drive", 90027, "Broccoli about 2 pounds, milk 8 gallons, french bread, cheese", "no requirement", "no", "It's really generous of you")
-# add_requester("+18582721172", "Elif", "408 Mulholland Drive", 90027, "Beef 3 pounds, pork 2 pounds, and about a week of vegetable", "no", "no", "Thanks for your kindness")
-# add_requester("+13128443122", "Amy", "4200 S Dorchester Ave, Chicago, IL", 60637, "1kg apples", "please leave it on the doorstep", "no", "thank you for taking time out of your day to help me!")
-# add_requester("+13261728944", "Zhimin", "4779 N Cambridge Ave, Chicago", 60637, "buying a chipotle burrito with beef and cheese. It will be about 10 dollars", "entry access is not required", "no", "Thanks!")
